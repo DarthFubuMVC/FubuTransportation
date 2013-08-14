@@ -58,7 +58,6 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Behaviors\InitiatingSagaHandlerBehavior.cs" />
     <Compile Include="Behaviors\SagaHandlerBehavior.cs" />
     <Compile Include="Configuration\ChannelGraph.cs" />
     <Compile Include="Configuration\UriExtensions.cs" />

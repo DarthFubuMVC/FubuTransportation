@@ -2,7 +2,6 @@
 using System.Linq;
 using FubuMVC.Core;
 using FubuMVC.Core.Registration;
-using FubuTransportation.Configuration;
 using FubuTransportation.Registration.Nodes;
 using FubuTransportation.Runtime;
 
@@ -18,8 +17,7 @@ namespace FubuTransportation.Registration.Conventions
                 .Each(x =>
                 {
                     var property = x.HandlerType.GetProperty("State");
-                    var sagaNode = new SagaNode(x.HandlerType, property.PropertyType, x.InputType(),
-                        x.Method.Name.StartsWith("Initiates"));
+                    var sagaNode = new SagaNode(x.HandlerType, property.PropertyType, x.InputType());
                     var defaultRepositoryDef = graph.Services.DefaultServiceFor(typeof(ISagaRepository<>));
                     sagaNode.SagaRepositoryByCorrelationId(defaultRepositoryDef);
                     x.AddBefore(sagaNode);

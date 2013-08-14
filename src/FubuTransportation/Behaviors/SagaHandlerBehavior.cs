@@ -29,13 +29,14 @@ namespace FubuTransportation.Behaviors
 
         public void Invoke()
         {
-            var state = LoadState();
-            if (state == null)
-                return; //TODO put this message in a holding queue, timed message?
+            var state = _sagaRepository.Load<TSagaState>();
+
+            //TODO Deal with non-initiating message through continuation, or discarded message?
 
             _stateSetter(_handler, state);
             Inner.Invoke();
 
+            //TODO: Audit message for starting and completing?
             if (_isComplete(_handler))
             {
                 _sagaRepository.Delete(state);
@@ -44,12 +45,6 @@ namespace FubuTransportation.Behaviors
             {
                 _sagaRepository.Save(state);
             }
-        }
-
-        protected virtual TSagaState LoadState()
-        {
-            var state = _sagaRepository.Load<TSagaState>();
-            return state;
         }
 
         public void InvokePartial()
