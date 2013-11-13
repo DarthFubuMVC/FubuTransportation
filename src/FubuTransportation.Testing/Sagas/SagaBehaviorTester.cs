@@ -117,8 +117,7 @@ namespace FubuTransportation.Testing.Sagas
                                    .Return(theMessageList);
 
             theMessage = theMessageList.FirstOrDefault();
-//            MockFor<IFubuRequest>().Stub(x => x.Get<Message1>())
-//                .Return(theMessage);
+
             theInitialState = new SagaState();
 
             theHandler = MockFor<ITestingSagaHandler>();
