@@ -31,7 +31,6 @@ namespace FubuTransportation.Testing.Sagas
         public void SetUp()
         {
             FubuTransport.SetupForInMemoryTesting();
-
             theLogger = new SagaLogger();
             theContainer = new Container(x =>
             {
@@ -50,8 +49,8 @@ namespace FubuTransportation.Testing.Sagas
         {
             FubuTransport.Reset();
             theRuntime.Dispose();
+            theContainer.GetInstance<InMemoryTransport>().ClearAll();
         }
-
 
         [Test]
         public void try_to_run_the_saga_from_beginning_to_end()
@@ -203,17 +202,17 @@ namespace FubuTransportation.Testing.Sagas
             return _isCompleted;
         }
 
-        public void Handle(ImplementingClass message)
-        {
-            
-        }
-
         public TestSagaUpdate Handle(TestSagaStart start)
         {
             State = new TestSagaState { Id = Guid.NewGuid(), Name = start.Name };
             _logger.Trace(State.Id, "Started " + start.Name);
 
             return new TestSagaUpdate { CorrelationId = State.Id };
+        }
+
+        public void Handle(ImplementingClass message)
+        {
+
         }
 
         public TestSagaFinish Handle(TestSagaUpdate update)
@@ -239,7 +238,7 @@ namespace FubuTransportation.Testing.Sagas
 
     public class ImplementingClass : TestSagaStart
     {
-        
+
     }
 
     public class TestSagaUpdate

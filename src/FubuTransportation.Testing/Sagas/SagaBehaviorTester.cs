@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using FubuMVC.Core.Behaviors;
 using FubuMVC.Core.Runtime;
 using FubuTestingSupport;
@@ -99,6 +102,7 @@ namespace FubuTransportation.Testing.Sagas
     public abstract class SagaBehaviorContext : InteractionContext<SagaBehavior<SagaState, Message1, ITestingSagaHandler>>
     {
         protected Message1 theMessage;
+        protected IList<Message1> theMessageList;
         protected SagaState theInitialState;
         protected ITestingSagaHandler theHandler;
         protected IActionBehavior theInnerBehavior;
@@ -108,9 +112,13 @@ namespace FubuTransportation.Testing.Sagas
         protected override void beforeEach()
         {
             theMessage = new Message1();
-            MockFor<IFubuRequest>().Stub(x => x.Get<Message1>())
-                                   .Return(theMessage);
+            theMessageList = new List<Message1>{new Message1()};
+            MockFor<IFubuRequest>().Stub(x => x.Find<Message1>())
+                                   .Return(theMessageList);
 
+            theMessage = theMessageList.FirstOrDefault();
+//            MockFor<IFubuRequest>().Stub(x => x.Get<Message1>())
+//                .Return(theMessage);
             theInitialState = new SagaState();
 
             theHandler = MockFor<ITestingSagaHandler>();
