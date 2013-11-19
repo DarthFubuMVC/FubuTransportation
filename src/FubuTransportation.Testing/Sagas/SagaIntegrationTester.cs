@@ -85,7 +85,7 @@ namespace FubuTransportation.Testing.Sagas
                      .Count().ShouldEqual(1); // should be the same correlation id all the way through
 
             messages
-                .ShouldHaveTheSameElementsAs("Started Jeremy", "Updated Jeremy", "Finished with Updated Jeremy!");
+                .ShouldHaveTheSameElementsAs("Implemented Jeremy", "Started Jeremy", "Updated Implemented Jeremy", "Finished with Updated Implemented Jeremy!");
         }
     }
 
@@ -204,15 +204,20 @@ namespace FubuTransportation.Testing.Sagas
 
         public TestSagaUpdate Handle(TestSagaStart start)
         {
+            if(State == null)
             State = new TestSagaState { Id = Guid.NewGuid(), Name = start.Name };
             _logger.Trace(State.Id, "Started " + start.Name);
 
             return new TestSagaUpdate { CorrelationId = State.Id };
         }
 
-        public void Handle(ImplementingClass message)
+        public void Handle(ImplementingClass implement)
         {
+            State = new TestSagaState{Id = Guid.NewGuid(), Name = implement.Name };
+            
+            _logger.Trace(State.Id, "Implemented " + State.Name);
 
+            State.Name = "Implemented " + State.Name;
         }
 
         public TestSagaFinish Handle(TestSagaUpdate update)
