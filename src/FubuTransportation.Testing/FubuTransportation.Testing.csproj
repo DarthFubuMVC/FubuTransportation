@@ -522,6 +522,7 @@
     <Compile Include="Runtime\Serializers\EnvelopeSerializerTester.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Runtime\Serializers\XmlMessageSerializerRhinoMessageTester.cs" />
     <Compile Include="Runtime\Serializers\XmlMessageSerializerTester.cs">
       <SubType>Code</SubType>
     </Compile>

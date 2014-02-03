@@ -278,12 +278,11 @@ namespace FubuTransportation.Runtime.Serializers
 
         public object Deserialize(Stream message)
         {
-            var namespaces = GetNamespaces(new object[0]);
             var document = XDocument.Load(XmlReader.Create(message));
             if (document.Root == null)
                 throw new SerializationException("document doesn't have root element");
 
-            if (document.Root.Name != namespaces["esb"] + "messages")
+            if (document.Root.Name.LocalName != "messages")
                 throw new SerializationException("message doesn't have root element named 'messages'");
 
             var msgs = new List<object>();
