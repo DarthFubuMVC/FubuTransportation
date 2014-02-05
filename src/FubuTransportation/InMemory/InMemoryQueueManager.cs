@@ -25,8 +25,12 @@ namespace FubuTransportation.InMemory
             });
 
             
-            _queues.Each(x => x.SafeDispose());
-            _queues.ClearAll();
+            _queues.Each(x => x.Clear());
+        }
+
+        public static void Remove(InMemoryQueue queue)
+        {
+            _queues.Remove(queue.Uri);
         }
 
         public static void AddToDelayedQueue(EnvelopeToken envelope)

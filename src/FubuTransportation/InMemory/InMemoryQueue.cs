@@ -17,8 +17,9 @@ namespace FubuTransportation.InMemory
     public class InMemoryQueue : IDisposable
     {
         private readonly Uri _uri;
-        private readonly BlockingCollection<byte[]> _queue = new BlockingCollection<byte[]>(new ConcurrentBag<byte[]>());
+        private BlockingCollection<byte[]> _queue = InitializeQueue();
         private readonly BinaryFormatter _formatter;
+        private bool _disposed;
 
         public InMemoryQueue(Uri uri)
         {
@@ -47,26 +48,42 @@ namespace FubuTransportation.InMemory
         public IEnumerable<Envelope> Peek()
         {
             return _queue.ToArray().Select(x => _formatter.Deserialize(new MemoryStream(x)).As<Envelope>());
-        } 
+        }
+
+        public void Clear()
+        {
+            var oldQueue = _queue;
+            _queue = InitializeQueue();
+            oldQueue.CompleteAdding();
+        }
 
         public void Dispose()
         {
+            _disposed = true;
             _queue.CompleteAdding();
         }
 
         public void Receive(IReceiver receiver)
         {
-            foreach (var data in _queue.GetConsumingEnumerable())
+            while (!_disposed)
             {
-                using (var stream = new MemoryStream(data))
+                foreach (var data in _queue.GetConsumingEnumerable())
                 {
-                    var token = _formatter.Deserialize(stream).As<EnvelopeToken>();
+                    using (var stream = new MemoryStream(data))
+                    {
+                        var token = _formatter.Deserialize(stream).As<EnvelopeToken>();
 
-                    var callback = new InMemoryCallback(this, token);
+                        var callback = new InMemoryCallback(this, token);
 
-                    receiver.Receive(token.Data, token.Headers, callback);
+                        receiver.Receive(token.Data, token.Headers, callback);
+                    }
                 }
             }
+        }
+
+        private static BlockingCollection<byte[]> InitializeQueue()
+        {
+            return new BlockingCollection<byte[]>(new ConcurrentBag<byte[]>());
         }
     }
 

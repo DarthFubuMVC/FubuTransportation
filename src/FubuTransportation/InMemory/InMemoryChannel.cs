@@ -20,6 +20,7 @@ namespace FubuTransportation.InMemory
         public void Dispose()
         {
             _queue.Dispose();
+            InMemoryQueueManager.Remove(_queue);
         }
 
         public Uri Address { get; private set; }
