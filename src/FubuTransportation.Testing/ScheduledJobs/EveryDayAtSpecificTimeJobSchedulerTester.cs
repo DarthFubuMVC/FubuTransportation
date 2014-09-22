@@ -1,7 +1,7 @@
 ﻿using System;
 using FubuTestingSupport;
-using FubuTransportation.ScheduledJobs;
 using FubuTransportation.ScheduledJobs.Execution;
+using FubuTransportation.ScheduledJobs.Persistence;
 using NUnit.Framework;
 
 namespace FubuTransportation.Testing.ScheduledJobs
@@ -54,6 +54,82 @@ namespace FubuTransportation.Testing.ScheduledJobs
             Container.Inject(new EveryDayAtSpecificTime(hour: 07, minute: 33)); // 7:33am
             LocalSystemTime = DateTime.Today.AddHours(7).AddMinutes(33); // 7:33am
             nextScheduledTime = ClassUnderTest.ScheduleNextTime(LocalSystemTime, null);
+        }
+
+        [Test]
+        public void next_scheduled_time_should_be_right_now()
+        {
+            nextScheduledTime.LocalDateTime.ShouldEqual(DateTime.Today.AddHours(7).AddMinutes(33)); // Today 7:33am
+        }
+    }
+
+    [TestFixture]
+    public class when_scheduling_every_day_past_specified_time_within_grace_period_and_no_last_execution : InteractionContext<EveryDayAtSpecificTime>
+    {
+        private DateTimeOffset nextScheduledTime;
+
+        protected override void beforeEach()
+        {
+            Container.Inject(new EveryDayAtSpecificTime(hour: 07, minute: 33)); // 7:33am
+            LocalSystemTime = DateTime.Today.AddHours(7).AddMinutes(37); // 7:37am
+            nextScheduledTime = ClassUnderTest.ScheduleNextTime(LocalSystemTime, null);
+        }
+
+        [Test]
+        public void next_scheduled_time_should_be_slightly_in_past()
+        {
+            nextScheduledTime.LocalDateTime.ShouldEqual(DateTime.Today.AddHours(7).AddMinutes(33)); // Today 7:33am
+        }
+    }
+
+    [TestFixture]
+    public class when_scheduling_every_day_past_specified_time_outside_grace_period : InteractionContext<EveryDayAtSpecificTime>
+    {
+        private DateTimeOffset nextScheduledTime;
+
+        protected override void beforeEach()
+        {
+            Container.Inject(new EveryDayAtSpecificTime(hour: 07, minute: 33)); // 7:33am
+            LocalSystemTime = DateTime.Today.AddHours(7).AddMinutes(53); // 7:53am
+            nextScheduledTime = ClassUnderTest.ScheduleNextTime(LocalSystemTime, null);
+        }
+
+        [Test]
+        public void next_scheduled_time_should_start_the_next_day()
+        {
+            nextScheduledTime.LocalDateTime.ShouldEqual(DateTime.Today.AddDays(1).AddHours(7).AddMinutes(33)); // Tomorrow 7:33am
+        }
+    }
+
+    [TestFixture]
+    public class when_scheduling_every_day_past_specified_time_within_grace_period_and_last_execution_not_within_grace_period : InteractionContext<EveryDayAtSpecificTime>
+    {
+        private DateTimeOffset nextScheduledTime;
+
+        protected override void beforeEach()
+        {
+            Container.Inject(new EveryDayAtSpecificTime(hour: 07, minute: 33)); // 7:33am
+            LocalSystemTime = DateTime.Today.AddHours(7).AddMinutes(37); // 7:37am
+            nextScheduledTime = ClassUnderTest.ScheduleNextTime(LocalSystemTime, new JobExecutionRecord { Finished = LocalSystemTime.AddHours(-3) }); // 4:37 am
+        }
+
+        [Test]
+        public void next_scheduled_time_should_be_slightly_in_past()
+        {
+            nextScheduledTime.LocalDateTime.ShouldEqual(DateTime.Today.AddHours(7).AddMinutes(33)); // Today 7:33am
+        }
+    }
+
+    [TestFixture]
+    public class when_scheduling_every_day_past_specified_time_within_grace_period_and_last_execution_within_grace_period : InteractionContext<EveryDayAtSpecificTime>
+    {
+        private DateTimeOffset nextScheduledTime;
+
+        protected override void beforeEach()
+        {
+            Container.Inject(new EveryDayAtSpecificTime(hour: 07, minute: 33)); // 7:33am
+            LocalSystemTime = DateTime.Today.AddHours(7).AddMinutes(37); // 7:37am
+            nextScheduledTime = ClassUnderTest.ScheduleNextTime(LocalSystemTime, new JobExecutionRecord { Finished = LocalSystemTime.AddMinutes(-2) }); // 7:35 am
         }
 
         [Test]
